@@ -83,3 +83,67 @@ describe('POST /api/register', () => {
         expect(res.body.msg).toBe('Invalid email format.');
       });
   });
+
+describe('POST /api/login', () => {
+  beforeEach(async () => {
+    // Чистим таблицу и добавляем одобренного пользователя
+    await db.query('DELETE FROM users;');
+    await db.query(`
+      INSERT INTO users (name, email, password, role, is_approved)
+      VALUES ('Approved User', 'approved@example.com', 'testpass', 'user', true);
+    `);
+  });
+
+  test('200: logs in an approved user and returns a token', async () => {
+    const res = await request(app)
+      .post('/api/login')
+      .send({
+        email: 'approved@example.com',
+        password: 'testpass'
+      });
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.msg).toBe('Login successful.');
+    expect(res.body).toHaveProperty('token');
+    expect(typeof res.body.token).toBe('string');
+  });
+
+  test('401: returns error for unapproved user', async () => {
+    // создаём нового пользователя без подтверждения
+    await db.query(`
+      INSERT INTO users (name, email, password, role, is_approved)
+      VALUES ('Pending User', 'pending@example.com', 'testpass', 'user', false);
+    `);
+
+    const res = await request(app)
+      .post('/api/login')
+      .send({
+        email: 'pending@example.com',
+        password: 'testpass'
+      });
+
+    expect(res.statusCode).toBe(401);
+    expect(res.body.msg).toBe('Invalid credentials or account not approved.');
+  });
+
+  test('400: returns error for missing fields', async () => {
+    const res = await request(app)
+      .post('/api/login')
+      .send({ email: 'approved@example.com' }) // без пароля
+      .expect(400);
+
+    expect(res.body.msg).toBe('Email and password are required.');
+  });
+
+  test('401: returns error for invalid credentials/account not approved', async () => {
+    const res = await request(app)
+      .post('/api/login')
+      .send({
+        email: 'approved@example.com',
+        password: 'wrongpass'
+      });
+    
+    expect(res.statusCode).toBe(401);
+    expect(res.body.msg).toBe('Invalid credentials or account not approved.');
+  });
+});
