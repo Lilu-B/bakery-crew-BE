@@ -12,6 +12,13 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ msg: 'Name, email, and password are required.' });
     }
 
+    // Проверка формата email
+    // Используем библиотеку validator для проверки формата email
+    const validator = require('validator');
+    if (!validator.isEmail(email)) {
+    return res.status(422).json({ msg: 'Invalid email format.' });
+    }
+
     // Проверка существующего пользователя
     const existingUser = await findUserByEmail(email);
     if (existingUser) {
