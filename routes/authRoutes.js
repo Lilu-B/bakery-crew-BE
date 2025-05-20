@@ -1,6 +1,7 @@
 const express = require('express');
 const { registerUser, loginUser } = require('../controllers/authController');
-
+const verifyToken = require('../middleware/authMiddleware');
+// const { checkUserRole } = require('../middleware/authMiddleware'); // Импортируем middleware для проверки роли
 const router = express.Router();
 
 // POST /api/register
@@ -16,6 +17,13 @@ router.post('/login', loginUser);
 //     }
 //     res.status(200).json({ msg: 'Logged out successfully.' });
 //   });
+// });
+
+router.get('/protected', verifyToken, (req, res) => {
+  res.status(200).json({ msg: `Hello, ${req.user.email}!`, role: req.user.role });
+});
+// router.get('/protected', verifyToken, checkUserRole('admin'), (req, res) => {
+//   res.status(200).json({ msg: `Hello, ${req.user.email}!`, role: req.user.role });
 // });
 
 module.exports = router;
