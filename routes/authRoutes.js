@@ -8,17 +8,13 @@ const router = express.Router();
 router.post('/register', registerUser);
 // POST /api/login
 router.post('/login', loginUser);
-// GET /api/logout
-// router.get('/logout', (req, res) => {
-//   // Логика выхода пользователя
-//   req.session.destroy((err) => {
-//     if (err) {
-//       return res.status(500).json({ msg: 'Error logging out.' });
-//     }
-//     res.status(200).json({ msg: 'Logged out successfully.' });
-//   });
-// });
+// POST /api/logout
+router.post('/logout', (req, res) => {
+    res.status(200).json({ msg: 'Logout successful.' });
+});
 
+
+// GET /api/protected
 router.get('/protected', verifyToken, (req, res) => {
   res.status(200).json({ msg: `Hello, ${req.user.email}!`, role: req.user.role });
 });
