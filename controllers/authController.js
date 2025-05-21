@@ -94,18 +94,24 @@ const loginUser = async (req, res) => {
     try {
       // 2. Запрос к базе: найти пользователя с такими email и password, который уже одобрен
       const result = await db.query(
-        'SELECT * FROM users WHERE email = $1 AND password = $2 AND is_approved = true',
-        [email, password]
+        'SELECT * FROM users WHERE email = $1',
+        [email]
       );
   
       const user = result.rows[0]; // получаем первого найденного пользователя (если есть)
   
       // 3. Если пользователь не найден или не одобрен
-      if (!user) {
+      if (!user || !user.is_approved) {
+        return res.status(401).json({ msg: 'Invalid credentials or account not approved.' });
+      }
+
+      // 4. Проверяем пароль
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (!isMatch) {
         return res.status(401).json({ msg: 'Invalid credentials or account not approved.' });
       }
   
-      // 4. Генерация JWT-токена
+      // 5. Генерация JWT-токена
       const token = jwt.sign(
         {
           id: user.id,
@@ -113,17 +119,17 @@ const loginUser = async (req, res) => {
           role: user.role
         },
         process.env.JWT_SECRET, // секретная строка из переменных окружения
-        { expiresIn: '1h' } // токен действителен 1 час
+        { expiresIn: '30d' } // токен действителен 30 дней
       );
   
-      // 5. Отправка успешного ответа и токена
+      // 6. Отправка успешного ответа и токена
       res.status(200).json({
         msg: 'Login successful.',
         token // клиент сохранит токен и будет использовать для аутентификации
       });
   
     } catch (error) {
-      // 6. Ловим и логируем любые непредвиденные ошибки
+      // 7. Ловим и логируем любые непредвиденные ошибки
       console.error('Login error:', error);
       res.status(500).json({ msg: 'Internal server error' });
     }

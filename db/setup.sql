@@ -40,7 +40,7 @@ CREATE TABLE messages (
 INSERT INTO users (email, password, name, role, is_approved)
 VALUES (
   'admin@bakery.local',
-  '$2b$10$O5KXrI7ZK0JjcS60UPYAZuKoXWq6Pf23GfOJmVprG.Dtc7FKF0t26',
+  '$2b$10$Ek6F35Gw7eAhLxVcagkgZeuFbjRtC3jlTsIKgQeQEzDw/d08kKYjG',
   'Main Admin',
   'developer',
   true

@@ -1,6 +1,8 @@
 const request = require('supertest');
 const app = require('../app');
 const db = require('../db/connection');
+const bcrypt = require('bcrypt');
+// const jwt = require('jsonwebtoken');
 
 beforeAll(() => {
     return db.query('DELETE FROM users;');
@@ -92,13 +94,14 @@ describe('POST /api/register', () => {
   });
 
 describe('POST /api/login', () => {
+  // Чистим таблицу и добавляем одобренного пользователя
   beforeEach(async () => {
-    // Чистим таблицу и добавляем одобренного пользователя
     await db.query('DELETE FROM users;');
+    const hashedPassword = await bcrypt.hash('testpass', 10);
     await db.query(`
       INSERT INTO users (name, email, password, role, is_approved)
-      VALUES ('Approved User', 'approved@example.com', 'testpass', 'user', true);
-    `);
+      VALUES ('Approved User', 'approved@example.com', $1, 'user', true);
+    `, [hashedPassword]);
   });
 
   test('200: logs in an approved user and returns a token', async () => {
@@ -160,10 +163,11 @@ describe('GET /api/protected', () => {
 
   beforeEach(async () => {
     await db.query('DELETE FROM users;');
+    const hashedPassword = await bcrypt.hash('testpass', 10);
     await db.query(`
       INSERT INTO users (name, email, password, role, is_approved)
-      VALUES ('Approved User', 'auth@example.com', 'testpass', 'user', true);
-    `);
+      VALUES ('Approved User', 'auth@example.com', $1, 'user', true);
+    `, [hashedPassword]);
 
     // Получаем токен для защищённого маршрута
     const res = await request(app)
@@ -212,10 +216,11 @@ describe('JWT token after logout', () => {
 
   beforeEach(async () => {
     await db.query('DELETE FROM users;');
+    const hashedPassword = await bcrypt.hash('logoutpass', 10);
     await db.query(`
       INSERT INTO users (name, email, password, role, is_approved)
-      VALUES ('Logout User', 'logout@example.com', 'logoutpass', 'user', true);
-    `);
+      VALUES ('Logout User', 'logout@example.com', $1, 'user', true);
+    `, [hashedPassword]);
 
     const res = await request(app)
       .post('/api/login')
