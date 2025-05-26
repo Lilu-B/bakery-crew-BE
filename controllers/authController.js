@@ -1,7 +1,7 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const validator = require('validator');
-const { createUser, findUserByEmail } = require('../models/userModel');
+const { createUser, findUserByEmail, deleteUser } = require('../models/userModel');
 const db = require('../db/connection');
 
 // POST /register
@@ -116,7 +116,8 @@ const loginUser = async (req, res) => {
         {
           id: user.id,
           email: user.email,
-          role: user.role
+          role: user.role,
+          shift: user.shift
         },
         process.env.JWT_SECRET, // секретная строка из переменных окружения
         { expiresIn: '30d' } // токен действителен 30 дней
@@ -134,6 +135,36 @@ const loginUser = async (req, res) => {
       res.status(500).json({ msg: 'Internal server error' });
     }
   };
+
+
+
+// ✅ Контроллер удаления пользователя
+const handleDeleteUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await deleteUser(id, req.user); // req.user будет содержать id, role, shift
+
+    if (result === null) {
+      return res.status(404).json({ msg: 'User not found' });
+    }
+
+    if (result === false) {
+      return res.status(403).json({ msg: 'Access denied. You do not have permission to delete this user' });
+    }
+
+    res.status(200).json({
+      msg: 'User deleted successfully',
+      user: {
+        id: result.id,
+        name: result.name,
+        email: result.email
+      }
+    });
+  } catch (err) {
+    console.error('❌ Delete user error:', err);
+    res.status(500).json({ msg: 'Internal server error' });
+  }
+};
   
 
-module.exports = { registerUser, loginUser };
+module.exports = { registerUser, loginUser, handleDeleteUser };

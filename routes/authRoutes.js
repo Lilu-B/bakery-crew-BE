@@ -1,5 +1,5 @@
 const express = require('express');
-const { registerUser, loginUser } = require('../controllers/authController');
+const { registerUser, loginUser, handleDeleteUser } = require('../controllers/authController');
 const verifyToken = require('../middleware/authMiddleware');
 // const { checkUserRole } = require('../middleware/authMiddleware'); // Импортируем middleware для проверки роли
 const router = express.Router();
@@ -12,6 +12,8 @@ router.post('/login', loginUser);
 router.post('/logout', (req, res) => {
     res.status(200).json({ msg: 'Logout successful.' });
 });
+// DELETE /api/users/:id
+router.delete('/users/:id', verifyToken, handleDeleteUser);
 
 
 // GET /api/protected
