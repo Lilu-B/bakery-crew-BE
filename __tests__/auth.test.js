@@ -69,7 +69,7 @@ describe('POST /api/register', () => {
   
     test('400: responds with error if required fields are missing', async () => {
       const badUser = {
-        email: 'no-name@example.com',
+        email: 'not-an-email',
         password: '123'
       };
   
@@ -78,7 +78,13 @@ describe('POST /api/register', () => {
         .send(badUser);
         
       expect(res.statusCode).toBe(400);
-      expect(res.body.msg).toBe('Name, email, and password are required.');
+      expect(res.body.errors).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ msg: 'Name is required' }),
+          expect.objectContaining({ msg: 'Valid email is required' }),
+          expect.objectContaining({ msg: 'Password must be at least 6 characters' })
+        ])
+      );
     });
 
     test('422: should return error if email format is invalid', async () => {
@@ -88,8 +94,12 @@ describe('POST /api/register', () => {
           .post('/api/register')
           .send(invalidUser);
       
-        expect(res.statusCode).toBe(422);
-        expect(res.body.msg).toBe('Invalid email format.');
+        expect(res.statusCode).toBe(400);
+        expect(res.body.errors).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({ msg: 'Valid email is required' })
+          ])
+        );
       });
   });
 
@@ -139,10 +149,15 @@ describe('POST /api/login', () => {
   test('400: returns error for missing fields', async () => {
     const res = await request(app)
       .post('/api/login')
-      .send({ email: 'approved@example.com' }); // без пароля
+      .send({ }); // без пароля
 
     expect(res.statusCode).toBe(400);
-    expect(res.body.msg).toBe('Email and password are required.');
+    expect(res.body.errors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ msg: 'Valid email is required' }),
+        expect.objectContaining({ msg: 'Password is required' })
+      ])
+    );
   });
 
   test('401: returns error for invalid credentials/account not approved', async () => {

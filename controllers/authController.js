@@ -1,23 +1,20 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const validator = require('validator');
+// const validator = require('validator');
+const { validationResult } = require('express-validator');
 const { createUser, findUserByEmail, deleteUser } = require('../models/userModel');
 const db = require('../db/connection');
 
 // POST /register
 const registerUser = async (req, res) => {
-    const { name, email, password, phone, shift } = req.body;
-  
     // 1. Валидация обязательных полей
-    if (!name || !email || !password) {
-      return res.status(400).json({ msg: 'Name, email, and password are required.' });
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
     }
-  
-    // 2. Валидация формата email
-    if (!validator.isEmail(email)) {
-      return res.status(422).json({ msg: 'Invalid email format.' });
-    }
-  
+
+    const { name, email, password, phone, shift } = req.body;
+
     try {
       // 3. Проверка на существующего пользователя
       const existingUser = await findUserByEmail(email);
@@ -85,11 +82,14 @@ const registerUser = async (req, res) => {
 // POST /api/login
 // Асинхронная функция логина пользователя
 const loginUser = async (req, res) => {
+    // 1. Проверка: обязательные поля
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
     const { email, password } = req.body; // получаем email и пароль из тела запроса
   
-    // 1. Проверка: обязательные поля
-    if (!email || !password)
-      return res.status(400).json({ msg: 'Email and password are required.' });
   
     try {
       // 2. Запрос к базе: найти пользователя с такими email и password, который уже одобрен
