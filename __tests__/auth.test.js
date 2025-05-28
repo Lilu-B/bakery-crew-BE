@@ -1,11 +1,12 @@
 const request = require('supertest');
 const app = require('../app');
 const db = require('../db/connection');
+const { resetTestDB } = require('../utils/testUtils');
 const bcrypt = require('bcrypt');
-// const jwt = require('jsonwebtoken');
+const jwt = require('jsonwebtoken');
 
-beforeAll(() => {
-    return db.query('DELETE FROM users;');
+beforeAll(async () => {
+  await resetTestDB();  // основная очистка БД перед тестами
 });
 
 afterAll(() => {

@@ -1,13 +1,15 @@
 const request = require('supertest');
 const app = require('../app');
 const db = require('../db/connection');
+const { resetTestDB } = require('../utils/testUtils');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 let adminToken, manager1Token, manager2Token, user1Token, user2Token;
 let user1Id, user2Id, manager2Id;
 
 beforeAll(async () => {
-  await db.query('DELETE FROM users;');
+  await resetTestDB();  // основная очистка БД перед тестами
 
   // Создаём пользователей с ролями и сменами
   const users = [
@@ -166,7 +168,6 @@ describe('PATCH /api/admin/users/:id/assign-manager', () => {
         .patch(`/api/admin/users/${user3Id}/assign-manager`)
         .set('Authorization', `Bearer ${adminToken}`);
         
-        console.log('PROMOTE response:', res.body);
         expect(res.statusCode).toBe(200);
         expect(res.body.user.role).toBe('manager');
         expect(res.body.msg).toBe('User promoted to manager.');
@@ -196,7 +197,6 @@ describe('PATCH /api/admin/users/:id/revoke-manager', () => {
         .patch(`/api/admin/users/${user3Id}/revoke-manager`)
         .set('Authorization', `Bearer ${adminToken}`);
         
-        console.log('DEMOTE response:', res.body);
         expect(res.statusCode).toBe(200);
         expect(res.body.user.role).toBe('user');
         expect(res.body.msg).toBe('Manager demoted to user.');

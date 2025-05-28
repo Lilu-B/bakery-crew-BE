@@ -82,6 +82,9 @@ const registerUser = async (req, res) => {
 // POST /api/login
 // Асинхронная функция логина пользователя
 const loginUser = async (req, res) => {
+
+// console.log('⚠️ loginUser controller is ACTIVE');
+
     // 1. Проверка: обязательные поля
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -94,12 +97,15 @@ const loginUser = async (req, res) => {
     try {
       // 2. Запрос к базе: найти пользователя с такими email и password, который уже одобрен
       const result = await db.query(
-        'SELECT * FROM users WHERE email = $1',
+        // 'SELECT * FROM users WHERE email = $1',
+        'SELECT id, email, password, name, role, shift, is_approved, manager_id FROM users WHERE email = $1',
         [email]
       );
   
       const user = result.rows[0]; // получаем первого найденного пользователя (если есть)
-  
+ 
+// console.log('🔍 user from DB:', user);
+
       // 3. Если пользователь не найден или не одобрен
       if (!user || !user.is_approved) {
         return res.status(401).json({ msg: 'Invalid credentials or account not approved.' });
@@ -107,17 +113,23 @@ const loginUser = async (req, res) => {
 
       // 4. Проверяем пароль
       const isMatch = await bcrypt.compare(password, user.password);
+
+// console.log('🔐 password match:', isMatch);
+
       if (!isMatch) {
         return res.status(401).json({ msg: 'Invalid credentials or account not approved.' });
       }
-  
+
+// console.log('💡 Full user from DB:', user);
+
       // 5. Генерация JWT-токена
       const token = jwt.sign(
         {
           id: user.id,
           email: user.email,
           role: user.role,
-          shift: user.shift
+          shift: user.shift,
+          manager_id: user.manager_id // добавляем manager_id для проверки прав доступа
         },
         process.env.JWT_SECRET, // секретная строка из переменных окружения
         { expiresIn: '30d' } // токен действителен 30 дней
