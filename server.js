@@ -5,8 +5,12 @@
 //   console.log(`Server is listening on port ${PORT}...`);
 // });
 // -----ПОСТМЕН------
+process.env.NODE_ENV = 'test';
+
 const app = require('./app');
 const http = require('http');
+
+console.log('NODE_ENV at server.js start =', process.env.NODE_ENV);
 
 let PORT = process.env.PORT || 3001;
 

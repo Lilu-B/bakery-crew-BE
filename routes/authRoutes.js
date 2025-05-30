@@ -2,6 +2,7 @@ const express = require('express');
 const { body } = require('express-validator');
 const { registerUser, loginUser, handleDeleteUser } = require('../controllers/authController');
 const verifyToken = require('../middleware/authMiddleware');
+const validateRequest = require('../middleware/validationMiddleware');
 // const { checkUserRole } = require('../middleware/authMiddleware'); // Импортируем middleware для проверки роли
 const router = express.Router();
 
@@ -16,6 +17,7 @@ router.post('/register',
     body('phone').optional().isMobilePhone().withMessage('Invalid phone number'),
     body('shift').optional().isString()
   ],
+  validateRequest,
   registerUser
 );
 
@@ -26,6 +28,7 @@ router.post('/login',
     body('email').isEmail().withMessage('Valid email is required'),
     body('password').notEmpty().withMessage('Password is required')
   ],
+  validateRequest,
   loginUser
 );
 

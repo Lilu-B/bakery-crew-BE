@@ -6,7 +6,9 @@
     "start": "node server.js",
     "dev": "NODE_ENV=development nodemon server.js",
     "test": "NODE_ENV=test jest --runInBand --detectOpenHandles",
-    "prepare": "husky"
+    "prepare": "husky",
+    "seed:test": "NODE_ENV=test node scripts/seedTestUsers.js",
+    "dev:test": "NODE_ENV=test nodemon server.js"
   },
   "keywords": [],
   "author": "",

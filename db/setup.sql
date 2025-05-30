@@ -2,12 +2,14 @@ DROP TYPE IF EXISTS user_role CASCADE;
 DROP TYPE IF EXISTS user_shift CASCADE;
 DROP TYPE IF EXISTS message_type CASCADE;
 DROP TYPE IF EXISTS related_entity_type CASCADE;
+DROP TYPE IF EXISTS event_status CASCADE;
 
 -- ENUMS
 CREATE TYPE user_role AS ENUM ('developer', 'manager', 'user');
 CREATE TYPE user_shift AS ENUM ('1st', '2nd', 'night');
 CREATE TYPE message_type AS ENUM ('system', 'personal');
 CREATE TYPE related_entity_type AS ENUM ('overtime', 'initiative', 'approval', 'payment');
+CREATE TYPE event_status AS ENUM ('active', 'cancelled', 'expired');
 
 -- USERS
 CREATE TABLE users (
@@ -34,6 +36,27 @@ CREATE TABLE messages (
   message_type message_type NOT NULL,
   related_entity_id INTEGER,
   related_entity_type related_entity_type
+);
+
+-- EVENTS
+  CREATE TABLE events (
+  id SERIAL PRIMARY KEY,
+  title TEXT NOT NULL,
+  description TEXT,
+  date DATE NOT NULL,
+  shift user_shift NOT NULL,
+  created_by INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  created_at TIMESTAMP DEFAULT NOW(),
+  status event_status DEFAULT 'active'
+);
+
+-- EVENT APPLICATIONS
+CREATE TABLE event_applications (
+  id SERIAL PRIMARY KEY,
+  event_id INTEGER REFERENCES events(id) ON DELETE CASCADE,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  applied_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(event_id, user_id) -- нельзя подать заявку дважды
 );
 
 -- SuperAdmin: email = admin@bakery.local, ****** = admin123 (bcrypt)
