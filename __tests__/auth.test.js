@@ -6,11 +6,11 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 beforeAll(async () => {
-  await resetTestDB();  // основная очистка БД перед тестами
+  await resetTestDB();
 });
 
 afterAll(() => {
-  return db.end(); // закрываем соединение после тестов
+  return db.end();
 });
 
 describe('POST /api/register', () => {
@@ -42,10 +42,8 @@ describe('POST /api/register', () => {
         });
     
         expect(res.body.user.id).toEqual(expect.any(Number));
- //       expect(res.body.user.assignedManagerId).toBeNull();
     });
 
-// Подтверждение регистрации пользователем !!!!!!!
     test('201: should assign a manager if shift is provided', async () => {
     });
  
@@ -105,7 +103,6 @@ describe('POST /api/register', () => {
   });
 
 describe('POST /api/login', () => {
-  // Чистим таблицу и добавляем одобренного пользователя
   beforeEach(async () => {
     await db.query('DELETE FROM users;');
     const hashedPassword = await bcrypt.hash('testpass', 10);
@@ -130,7 +127,6 @@ describe('POST /api/login', () => {
   });
 
   test('401: returns error for unapproved user', async () => {
-    // создаём нового пользователя без подтверждения
     await db.query(`
       INSERT INTO users (name, email, password, role, is_approved)
       VALUES ('Pending User', 'pending@example.com', 'testpass', 'user', false);
@@ -150,7 +146,7 @@ describe('POST /api/login', () => {
   test('400: returns error for missing fields', async () => {
     const res = await request(app)
       .post('/api/login')
-      .send({ }); // без пароля
+      .send({ }); 
 
     expect(res.statusCode).toBe(400);
     expect(res.body.errors).toEqual(
@@ -185,7 +181,6 @@ describe('GET /api/protected', () => {
       VALUES ('Approved User', 'auth@example.com', $1, 'user', true);
     `, [hashedPassword]);
 
-    // Получаем токен для защищённого маршрута
     const res = await request(app)
       .post('/api/login')
       .send({ email: 'auth@example.com', password: 'testpass' });
@@ -246,14 +241,12 @@ describe('JWT token after logout', () => {
   });
 
   test('403: should not allow access to protected route after token is removed (client-side)', async () => {
-    // Шаг 1: Проверим, что токен работает
     const firstRes = await request(app)
       .get('/api/protected')
       .set('Authorization', `Bearer ${token}`);
     expect(firstRes.statusCode).toBe(200);
 
-    // Шаг 2: Симулируем logout: клиент удаляет токен — и не передаёт его
-    const res = await request(app).get('/api/protected'); // без заголовка Authorization
+    const res = await request(app).get('/api/protected');
     expect(res.statusCode).toBe(401);
     expect(res.body.msg).toBe('Access denied. No token provided.');
   });

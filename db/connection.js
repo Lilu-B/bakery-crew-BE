@@ -1,15 +1,9 @@
 const { Pool } = require('pg');
 const ENV = process.env.NODE_ENV || 'development';
 
-// Загружаем переменные окружения из соответствующего файла
 require('dotenv').config({
   path: `${__dirname}/../.env.${ENV}`,
 });
-
-// console.log('ENV =', ENV);
-// console.log('Loaded .env file for:', ENV);
-// console.log('DATABASE_URL:', process.env.DATABASE_URL);
-// console.log('PGDATABASE:', process.env.PGDATABASE);
 
 console.log('DATABASE_URL =', process.env.DATABASE_URL);
 console.log('ENV =', ENV);

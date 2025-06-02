@@ -10,7 +10,6 @@ const {
   deleteDonation
 } = require('../models/donationModel');
 
-// Автозакрытие старых сборов
 const expireOldDonations = async () => {
   await db.query(`
     UPDATE donations
@@ -19,12 +18,10 @@ const expireOldDonations = async () => {
   `);
 };
 
-// 1. Создать новый сбор средств
 const handleCreateDonation = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
-    // Проверка прав доступа
   if (req.user.role !== 'manager' && req.user.role !== 'developer') {
     return res.status(403).json({ msg: 'Only managers or admins can create donations' });
   }
@@ -42,7 +39,6 @@ const handleCreateDonation = async (req, res) => {
   }
 };
 
-// 2. Получить все активные сборы 
 const handleGetActiveDonations = async (req, res) => {
   try {
     const activeDonations = await getActiveDonations();
@@ -52,7 +48,6 @@ const handleGetActiveDonations = async (req, res) => {
   }
 };
 
-// 3. Получить все сборы in DB (включая завершенные)
 const handleGetAllDonations = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -68,7 +63,6 @@ const handleGetAllDonations = async (req, res) => {
   }
 };
 
-// конкретную запись о сборе с полной информацией по его ID
 const handleGetDonationById = async (req, res) => {
   try {
     const donation = await getDonationById(req.params.donationId);
@@ -79,7 +73,6 @@ const handleGetDonationById = async (req, res) => {
   }
 };
 
-// 4. Подтверждение оплаты доната
 const handleDonationPayment = async (req, res) => {
   const { donationId } = req.params;
   const { amount } = req.body;
@@ -93,18 +86,14 @@ const handleDonationPayment = async (req, res) => {
     const result = await confirmDonationPayment(donationId, userId, amount);
     res.status(201).json({ msg: 'Donation recorded', donation: result });
   } catch (err) {
-    // console.error('💥 Donation error:', err);
 
-    // 👇 Добавляем проверку текста ошибки
     if (err.message && err.message.includes('already donated')) {
       return res.status(409).json({ msg: 'You have already donated' });
     }
-
     res.status(500).json({ msg: 'Server error', error: err.message });
   }
 };
 
-// 5. Получить участников доната
 const handleGetDonationApplicants = async (req, res) => {
   try {
     const applicants = await getDonationApplicants(req.params.donationId);
@@ -114,7 +103,6 @@ const handleGetDonationApplicants = async (req, res) => {
   }
 };
 
-// 7. Удалить донат (создатель или developer)
 const handleDeleteDonation = async (req, res) => {
   const donationId = Number(req.params.donationId);
   const user = req.user;
@@ -123,7 +111,7 @@ const handleDeleteDonation = async (req, res) => {
     const deleted = await deleteDonation(donationId, user);
     if (!deleted) return res.status(404).json({ msg: 'Donation not found' });
 
-    res.status(200).json({ msg: 'Donation deleted', donationId }); // <- было undefined?
+    res.status(200).json({ msg: 'Donation deleted', donationId }); 
   } catch (err) {
     if (err.message === 'Unauthorized') {
       return res.status(403).json({ msg: 'Access denied' });

@@ -5,7 +5,6 @@ DROP TYPE IF EXISTS related_entity_type CASCADE;
 DROP TYPE IF EXISTS event_status CASCADE;
 DROP TYPE IF EXISTS donations_status CASCADE;
 
--- ENUMS
 CREATE TYPE user_role AS ENUM ('developer', 'manager', 'user');
 CREATE TYPE user_shift AS ENUM ('1st', '2nd', 'night');
 CREATE TYPE message_type AS ENUM ('system', 'personal');
@@ -13,7 +12,6 @@ CREATE TYPE related_entity_type AS ENUM ('overtime', 'initiative', 'approval', '
 CREATE TYPE event_status AS ENUM ('active', 'cancelled', 'expired');
 CREATE TYPE donations_status AS ENUM ('active', 'expired');
 
--- USERS
 CREATE TABLE users (
   id SERIAL PRIMARY KEY,
   email TEXT UNIQUE NOT NULL,
@@ -27,7 +25,6 @@ CREATE TABLE users (
   manager_id INTEGER REFERENCES users(id) ON DELETE SET NULL
 );
 
--- MESSAGES
 CREATE TABLE messages (
   id SERIAL PRIMARY KEY,
   sender_id INTEGER REFERENCES users(id),
@@ -40,7 +37,6 @@ CREATE TABLE messages (
   related_entity_type related_entity_type
 );
 
--- EVENTS
   CREATE TABLE events (
   id SERIAL PRIMARY KEY,
   title TEXT NOT NULL,
@@ -52,36 +48,33 @@ CREATE TABLE messages (
   status event_status DEFAULT 'active'
 );
 
--- EVENT APPLICATIONS
 CREATE TABLE event_applications (
   id SERIAL PRIMARY KEY,
   event_id INTEGER REFERENCES events(id) ON DELETE CASCADE,
   user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
   applied_at TIMESTAMP DEFAULT NOW(),
-  UNIQUE(event_id, user_id) -- нельзя подать заявку дважды
+  UNIQUE(event_id, user_id)
 );
 
--- INITIATIVES
 CREATE TABLE donations (
   id SERIAL PRIMARY KEY,
   title TEXT NOT NULL,
-  description TEXT NOT NULL, -- example: "Suggested: £5–10"
+  description TEXT NOT NULL, 
   deadline DATE,
   created_by INTEGER REFERENCES users(id) ON DELETE CASCADE,
   created_at TIMESTAMP DEFAULT NOW(),
   status donations_status DEFAULT 'active'
 );
--- INITIATIVE APPLICATIONS
+
 CREATE TABLE donation_applications (
   id SERIAL PRIMARY KEY,
   donation_id INTEGER REFERENCES donations(id) ON DELETE CASCADE,
   user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
   amount NUMERIC NOT NULL,
   applied_at TIMESTAMP DEFAULT NOW(),
-  UNIQUE(donation_id, user_id) -- prevent duplicate applications
+  UNIQUE(donation_id, user_id) 
 );
 
--- SuperAdmin: email = admin@bakery.local, ****** = admin123 (bcrypt)
 INSERT INTO users (email, password, name, role, is_approved)
 VALUES (
   'admin@bakery.local',

@@ -1,11 +1,9 @@
 const { approveUser, assignManagerRole, revokeManagerRole } = require('../models/adminModel');
 
-// Одобрение пользователя администратором
 const handleApproveUser = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // 👮‍♀️ Проверка роли администратора
     if (!req.user || (req.user.role !== 'developer' && req.user.role !== 'manager')) {
       return res.status(403).json({ msg: 'Access denied. Insufficient privileges.' });
     }
@@ -21,12 +19,11 @@ const handleApproveUser = async (req, res) => {
       user: updatedUser,
     });
   } catch (err) {
-    console.error('❌ Approve user error:', err);
+    console.error('Approve user error:', err);
     res.status(500).json({ msg: 'Internal server error' });
   }
 };
 
-// Назначение роли менеджера
 const handleAssignManager = async (req, res) => {
   try {
     const { id } = req.params;
@@ -46,12 +43,11 @@ const handleAssignManager = async (req, res) => {
       user: updatedUser
     });
   } catch (err) {
-    console.error('❌ Assign manager error:', err);
+    console.error('Assign manager error:', err);
     res.status(500).json({ msg: 'Internal server error' });
   }
 };
 
-// Снятие роли менеджера
 const handleRevokeManager = async (req, res) => {
   try {
     const { id } = req.params;
@@ -71,7 +67,7 @@ const handleRevokeManager = async (req, res) => {
       user: updatedUser
     });
   } catch (err) {
-    console.error('❌ Revoke manager error:', err);
+    console.error('Revoke manager error:', err);
     res.status(500).json({ msg: 'Internal server error' });
   }
 };

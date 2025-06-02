@@ -1,6 +1,5 @@
 const db = require('../db/connection');
 
-// Создать новый сбор средств
 const createDonation = async ({ title, description, deadline, created_by }) => {
   const result = await db.query(
     `INSERT INTO donations (title, description, deadline, created_by)
@@ -11,7 +10,6 @@ const createDonation = async ({ title, description, deadline, created_by }) => {
   return result.rows[0];
 };
 
-// Получить все активные сборы средств
 const getActiveDonations = async () => {
   const result = await db.query(
     `SELECT d.*, u.name AS creator_name
@@ -23,7 +21,6 @@ const getActiveDonations = async () => {
   return result.rows;
 };
 
-// Получить ВСЕ сборы с фильтрацией и флагом has_donated
 const getAllDonations = async (currentUserId, filters = {}) => {
   const conditions = [];
   const values = [];
@@ -62,7 +59,6 @@ const getAllDonations = async (currentUserId, filters = {}) => {
   return result.rows;
 };
 
-// Получить конкретный сбор по ID с деталями
 const getDonationById = async (donationId) => {
   const result = await db.query(
     `SELECT d.*, u.name AS creator_name,
@@ -78,9 +74,7 @@ const getDonationById = async (donationId) => {
   return result.rows[0];
 };
 
-// Добавить подтвержденную оплату в donation_applications
 const confirmDonationPayment = async (donationId, userId, amount) => {
-    // Проверка на дублирующую запись
   const existing = await db.query(
     `SELECT * FROM donation_applications WHERE donation_id = $1 AND user_id = $2`,
     [donationId, userId]
@@ -100,7 +94,6 @@ const confirmDonationPayment = async (donationId, userId, amount) => {
   return result.rows[0];
 };
 
-// Получить список участников сбора (исключая отменённых)
 const getDonationApplicants = async (donationId) => {
   const result = await db.query(
     `SELECT u.id, u.name, da.amount
@@ -112,7 +105,6 @@ const getDonationApplicants = async (donationId) => {
   return result.rows;
 };
 
-// Удалить сбор средств (создатель или разработчик)
 const deleteDonation = async (donationId, requester) => {
   const result = await db.query(`SELECT * FROM donations WHERE id = $1`, [donationId]);
   const donation = result.rows[0];

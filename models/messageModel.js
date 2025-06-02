@@ -1,6 +1,5 @@
 const db = require('../db/connection');
 
-// ✅ Создание нового сообщения
 const createMessage = async ({
   sender_id,
   receiver_id,
@@ -35,7 +34,6 @@ const createMessage = async ({
   return result.rows[0];
 };
 
-// ✅ Получить входящие сообщения для пользователя
 const getInboxMessages = async (userId) => {
   const result = await db.query(
     `
@@ -48,7 +46,6 @@ const getInboxMessages = async (userId) => {
   return result.rows;
 };
 
-// ✅ Получить отправленные сообщения
 const getSentMessages = async (userId) => {
   const result = await db.query(
     `

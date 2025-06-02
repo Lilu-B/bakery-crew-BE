@@ -1,13 +1,10 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-// const validator = require('validator');
 const { validationResult } = require('express-validator');
 const { createUser, findUserByEmail, deleteUser } = require('../models/userModel');
 const db = require('../db/connection');
 
-// POST /register
 const handleRegisterUser = async (req, res) => {
-    // 1. Валидация обязательных полей
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
@@ -16,18 +13,15 @@ const handleRegisterUser = async (req, res) => {
     const { name, email, password, phone, shift } = req.body;
 
     try {
-      // 3. Проверка на существующего пользователя
       const existingUser = await findUserByEmail(email);
       if (existingUser) {
         return res.status(409).json({ msg: 'User with this email already exists.' });
       }
   
-      // 4. Хэширование пароля
       const hashedPassword = await bcrypt.hash(password, 10);
   
       let managerId = null;
   
-      // 5. Назначение менеджера по смене (если передана shift)
       if (shift) {
         const managerResult = await db.query(
           `SELECT id FROM users WHERE role = 'manager' AND shift = $1 LIMIT 1;`,
@@ -38,7 +32,6 @@ const handleRegisterUser = async (req, res) => {
         }
       }
   
-      // 6. Создание пользователя в БД
       const newUser = await createUser({
         name,
         email,
@@ -48,7 +41,6 @@ const handleRegisterUser = async (req, res) => {
         managerId
       });
   
-      // 7. Ответ клиенту
       res.status(201).json({
         msg: 'User registered successfully. Awaiting approval.',
         user: {
@@ -66,83 +58,57 @@ const handleRegisterUser = async (req, res) => {
     console.error('❌ Registration error:', error);
     res.status(500).json({
       msg: 'An error occurred while trying to register the user. Please try again later.',
-      error: error.message  // 👈 временно выводим для отладки
+      error: error.message  
     });
-    //   catch (error) {
-    //     console.error('❌ Error during user registration:', error);
-
-    //     res.status(500).json({
-    //       msg: 'An error occurred while trying to register the user. Please try again later.'
-    //     });
-    //   }
   }
 
 };
 
-// POST /api/login
-// Асинхронная функция логина пользователя
 const handleLoginUser = async (req, res) => {
 
-// console.log('⚠️ loginUser controller is ACTIVE');
-
-    // 1. Проверка: обязательные поля
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { email, password } = req.body; // получаем email и пароль из тела запроса
+    const { email, password } = req.body;
   
   
     try {
-      // 2. Запрос к базе: найти пользователя с такими email и password, который уже одобрен
       const result = await db.query(
-        // 'SELECT * FROM users WHERE email = $1',
         'SELECT id, email, password, name, role, shift, is_approved, manager_id FROM users WHERE email = $1',
         [email]
       );
-  
-      const user = result.rows[0]; // получаем первого найденного пользователя (если есть)
+      const user = result.rows[0];
  
-// console.log('🔍 user from DB:', user);
-
-      // 3. Если пользователь не найден или не одобрен
       if (!user || !user.is_approved) {
         return res.status(401).json({ msg: 'Invalid credentials or account not approved.' });
       }
 
-      // 4. Проверяем пароль
       const isMatch = await bcrypt.compare(password, user.password);
-
-// console.log('🔐 password match:', isMatch);
 
       if (!isMatch) {
         return res.status(401).json({ msg: 'Invalid credentials or account not approved.' });
       }
 
-// console.log('💡 Full user from DB:', user);
-
-      // 5. Генерация JWT-токена
       const token = jwt.sign(
         {
           id: user.id,
           email: user.email,
           role: user.role,
           shift: user.shift,
-          manager_id: user.manager_id // добавляем manager_id для проверки прав доступа
+          manager_id: user.manager_id 
         },
-        process.env.JWT_SECRET, // секретная строка из переменных окружения
-        { expiresIn: '30d' } // токен действителен 30 дней
+        process.env.JWT_SECRET, 
+        { expiresIn: '30d' }
       );
   
-      // 6. Отправка успешного ответа и токена
       res.status(200).json({
         msg: 'Login successful.',
-        token // клиент сохранит токен и будет использовать для аутентификации
+        token
       });
   
     } catch (error) {
-      // 7. Ловим и логируем любые непредвиденные ошибки
       console.error('Login error:', error);
       res.status(500).json({ msg: 'Internal server error' });
     }
@@ -150,11 +116,10 @@ const handleLoginUser = async (req, res) => {
 
 
 
-// ✅ Контроллер удаления пользователя
 const handleDeleteUser = async (req, res) => {
   try {
     const { id } = req.params;
-    const result = await deleteUser(id, req.user); // req.user будет содержать id, role, shift
+    const result = await deleteUser(id, req.user);
 
     if (result === null) {
       return res.status(404).json({ msg: 'User not found' });
@@ -173,7 +138,7 @@ const handleDeleteUser = async (req, res) => {
       }
     });
   } catch (err) {
-    console.error('❌ Delete user error:', err);
+    console.error('Delete user error:', err);
     res.status(500).json({ msg: 'Internal server error' });
   }
 };

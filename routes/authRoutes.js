@@ -3,7 +3,6 @@ const { body } = require('express-validator');
 const { handleRegisterUser, handleLoginUser, handleDeleteUser } = require('../controllers/authController');
 const verifyToken = require('../middleware/authMiddleware');
 const validateRequest = require('../middleware/validationMiddleware');
-// const { checkUserRole } = require('../middleware/authMiddleware'); // Импортируем middleware для проверки роли
 const router = express.Router();
 
 // POST /api/register
@@ -45,8 +44,6 @@ router.delete('/users/:id', verifyToken, handleDeleteUser);
 router.get('/protected', verifyToken, (req, res) => {
   res.status(200).json({ msg: `Hello, ${req.user.email}!`, role: req.user.role });
 });
-// router.get('/protected', verifyToken, checkUserRole('admin'), (req, res) => {
-//   res.status(200).json({ msg: `Hello, ${req.user.email}!`, role: req.user.role });
-// });
+
 
 module.exports = router;

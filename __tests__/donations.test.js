@@ -1,5 +1,3 @@
-// __tests__/donations.test.js
-
 const request = require('supertest');
 const app = require('../app');
 const db = require('../db/connection');
@@ -47,7 +45,7 @@ afterAll(async () => {
 });
 
 describe('POST /api/donations - Create Donation', () => {
-  test('✅ Manager can create donation', async () => {
+  test('Manager can create donation', async () => {
     const res = await request(app)
       .post('/api/donations')
       .set('Authorization', `Bearer ${managerToken}`)
@@ -62,7 +60,7 @@ describe('POST /api/donations - Create Donation', () => {
     expect(res.body.donation).toHaveProperty('status', 'active');
   });
 
-  test('✅ Admin can create donation', async () => {
+  test('Admin can create donation', async () => {
     const res = await request(app)
       .post('/api/donations')
       .set('Authorization', `Bearer ${adminToken}`)
@@ -76,7 +74,7 @@ describe('POST /api/donations - Create Donation', () => {
     expect(res.body.donation).toHaveProperty('title', 'Birthday Gift');
   });
 
-  test('❌ User cannot create donation', async () => {
+  test('User cannot create donation', async () => {
     const res = await request(app)
       .post('/api/donations')
       .set('Authorization', `Bearer ${user1Token}`)
@@ -92,7 +90,7 @@ describe('POST /api/donations - Create Donation', () => {
 });
 
 describe('GET /api/donations - Filtered and all donations', () => {
-  test('✅ Get all donations without filters', async () => {
+  test('Get all donations without filters', async () => {
     const res = await request(app)
       .get('/api/donations')
       .set('Authorization', `Bearer ${user1Token}`);
@@ -101,7 +99,7 @@ describe('GET /api/donations - Filtered and all donations', () => {
     expect(Array.isArray(res.body.allDonations)).toBe(true);
   });
 
-  test('✅ Filter by status=active', async () => {
+  test('Filter by status=active', async () => {
     const res = await request(app)
       .get('/api/donations?status=active')
       .set('Authorization', `Bearer ${user1Token}`);
@@ -112,7 +110,7 @@ describe('GET /api/donations - Filtered and all donations', () => {
     });
   });
 
-  test('✅ Filter by creation date', async () => {
+  test('Filter by creation date', async () => {
     const res = await request(app)
       .get('/api/donations?created_after=2025-01-01')
       .set('Authorization', `Bearer ${user2Token}`);
@@ -121,7 +119,7 @@ describe('GET /api/donations - Filtered and all donations', () => {
     expect(Array.isArray(res.body.allDonations)).toBe(true);
   });
 
-  test('✅ total_collected is displayed and 0 by default', async () => {
+  test('total_collected is displayed and 0 by default', async () => {
     const res = await request(app)
       .get('/api/donations')
       .set('Authorization', `Bearer ${user1Token}`);
@@ -132,7 +130,7 @@ describe('GET /api/donations - Filtered and all donations', () => {
     });
   });
 
-  test('✅ donor_count increases after donation', async () => {
+  test('donor_count increases after donation', async () => {
     const resBefore = await request(app)
         .get('/api/donations?status=active')
         .set('Authorization', `Bearer ${user1Token}`);
@@ -152,7 +150,7 @@ describe('GET /api/donations - Filtered and all donations', () => {
     expect(Number(newCount)).toBe(Number(oldCount) + 1);
     });
 
-  test('✅ Donations are returned in order of nearest deadline first', async () => {
+  test('Donations are returned in order of nearest deadline first', async () => {
     const res = await request(app)
         .get('/api/donations')
         .set('Authorization', `Bearer ${user1Token}`);
@@ -180,7 +178,7 @@ describe('POST /api/donations/:id/confirm-payment', () => {
     expect(res.body.donation.amount).toBe("5");
   });
 
-  test('❌ User cannot donate twice', async () => {
+  test('User cannot donate twice', async () => {
     const donations = await request(app)
       .get('/api/donations?status=active')
       .set('Authorization', `Bearer ${user2Token}`);
@@ -195,8 +193,7 @@ describe('POST /api/donations/:id/confirm-payment', () => {
     expect(res.body.msg).toMatch(/already donated/i);
   });
 
-    test('❌ Donation must fail without amount', async () => {
-    // Сначала получаем актуальный ID
+    test('Donation must fail without amount', async () => {
     const donations = await request(app)
         .get('/api/donations?status=active')
         .set('Authorization', `Bearer ${user1Token}`);
@@ -206,13 +203,13 @@ describe('POST /api/donations/:id/confirm-payment', () => {
     const res = await request(app)
         .post(`/api/donations/${donationId}/confirm-payment`)
         .set('Authorization', `Bearer ${user1Token}`)
-        .send({}); // отсутствие суммы
+        .send({}); 
 
     expect(res.statusCode).toBe(400);
     expect(res.body.errors[0].msg).toMatch(/amount is required/i);
     });
 
-  test('✅ has_donated is true after donation', async () => {
+  test('has_donated is true after donation', async () => {
     const donations = await request(app)
         .get('/api/donations?status=active')
         .set('Authorization', `Bearer ${user2Token}`);
@@ -234,7 +231,7 @@ describe('POST /api/donations/:id/confirm-payment', () => {
 });
 
 describe('DELETE /api/donations/:id - Deletion rules', () => {
-  test('❌ Another manager cannot delete this donation', async () => {
+  test('Another manager cannot delete this donation', async () => {
      const all = await request(app)
       .get('/api/donations')
       .set('Authorization', `Bearer ${managerToken}`);
@@ -247,7 +244,7 @@ describe('DELETE /api/donations/:id - Deletion rules', () => {
     expect(res.statusCode).toBe(403);
   });
 
-  test('✅ Admin can delete any donation', async () => {
+  test('Admin can delete any donation', async () => {
     const all = await request(app)
       .get('/api/donations')
       .set('Authorization', `Bearer ${managerToken}`);
@@ -262,7 +259,7 @@ describe('DELETE /api/donations/:id - Deletion rules', () => {
     expect(res.body.msg).toMatch(/donation deleted/i);
   });
 
-  test('❌ Cannot delete non-existent donation', async () => {
+  test('Cannot delete non-existent donation', async () => {
     const res = await request(app)
         .delete('/api/donations/999999')
         .set('Authorization', `Bearer ${adminToken}`);
@@ -273,7 +270,7 @@ describe('DELETE /api/donations/:id - Deletion rules', () => {
 });
 
 describe('GET /api/donations/:id - Donation details', () => {
-  test('✅ User can view donation details', async () => {
+  test('User can view donation details', async () => {
     const all = await request(app)
       .get('/api/donations?status=active')
       .set('Authorization', `Bearer ${user1Token}`);
@@ -288,7 +285,7 @@ describe('GET /api/donations/:id - Donation details', () => {
     expect(res.body.donation).toHaveProperty('id', donationId);
   });
 
-  test('❌ User cannot view details of non-existent donation', async () => {
+  test('User cannot view details of non-existent donation', async () => {
     const res = await request(app)
       .get('/api/donations/999999')
       .set('Authorization', `Bearer ${user1Token}`);
@@ -298,7 +295,7 @@ describe('GET /api/donations/:id - Donation details', () => {
   });
 });
 describe('GET /api/donations/active - Active donations', () => {
-  test('✅ Get all active donations', async () => {
+  test('Get all active donations', async () => {
     const res = await request(app)
       .get('/api/donations/active')
       .set('Authorization', `Bearer ${user1Token}`);
@@ -310,7 +307,7 @@ describe('GET /api/donations/active - Active donations', () => {
     });
   });
 
-  test('❌ Unauthorized user cannot access active donations', async () => {
+  test('Unauthorized user cannot access active donations', async () => {
     const res = await request(app)
       .get('/api/donations/active');
 
@@ -319,7 +316,7 @@ describe('GET /api/donations/active - Active donations', () => {
   });
 });
 describe('GET /api/donations/:id/applicants - Donation applicants', () => {
-  test('✅ Get applicants for a donation', async () => {
+  test('Get applicants for a donation', async () => {
     const all = await request(app)
       .get('/api/donations?status=active')
       .set('Authorization', `Bearer ${user1Token}`);
@@ -334,7 +331,7 @@ describe('GET /api/donations/:id/applicants - Donation applicants', () => {
     expect(Array.isArray(res.body.applicants)).toBe(true);
   });
 
-  test('❌ Unauthorized user cannot access applicants', async () => {
+  test('Unauthorized user cannot access applicants', async () => {
     const res = await request(app)
       .get('/api/donations/999999/applicants');
 

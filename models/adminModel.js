@@ -9,7 +9,6 @@ const approveUser = async (id) => {
   return result.rows[0];
 };
 
-// ✅ Назначить пользователя менеджером
 const assignManagerRole = async (userId) => {
   const result = await db.query(`
     UPDATE users
@@ -21,7 +20,6 @@ const assignManagerRole = async (userId) => {
   return result.rows[0] || null;
 };
 
-// ✅ Снять роль менеджера
 const revokeManagerRole = async (userId) => {
   const result = await db.query(`
     UPDATE users
@@ -32,9 +30,6 @@ const revokeManagerRole = async (userId) => {
 
   return result.rows[0] || null;
 };
-
-
-
 
 
 module.exports = {

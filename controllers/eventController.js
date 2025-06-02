@@ -1,7 +1,6 @@
 const db = require('../db/connection');
 const { validationResult } = require('express-validator');
 
-// 1. Создать событие
 const handleCreateEvent = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
@@ -22,7 +21,6 @@ const handleCreateEvent = async (req, res) => {
   }
 };
 
-// 2. Получить все активные события
 const handleGetAllEvents = async (req, res) => {
   try {
     const result = await db.query(
@@ -38,7 +36,6 @@ const handleGetAllEvents = async (req, res) => {
   }
 };
 
-// 3. Удалить событие (только автор или админ)
 const handleDeleteEvent = async (req, res) => {
   const eventId = req.params.eventId;
   const user = req.user;
@@ -59,7 +56,6 @@ const handleDeleteEvent = async (req, res) => {
   }
 };
 
-// 4. Подать заявку на событие
 const handleApplyToEvent = async (req, res) => {
   const userId = req.user.id;
   const eventId = req.params.eventId;
@@ -67,27 +63,22 @@ const handleApplyToEvent = async (req, res) => {
   console.log('Applying to event:', eventId, 'by user:', userId);
 
   try {
-        // Получаем данные события
     const eventRes = await db.query('SELECT * FROM events WHERE id = $1', [eventId]);
     const event = eventRes.rows[0];
 
     if (!event) return res.status(404).json({ msg: 'Event not found' });
 
-    // Получаем данные пользователя
     const userRes = await db.query('SELECT shift, role FROM users WHERE id = $1', [userId]);
     const user = userRes.rows[0];
 
-    // Проверка роли
     if (user.role !== 'user') {
       return res.status(403).json({ msg: 'Only users can apply to events' });
     }
 
-    // Проверка смены
     if (user.shift !== event.shift) {
       return res.status(403).json({ msg: 'Users can only apply to events from their shift' });
     }
 
-    // Записываем заявку
     await db.query(
       `INSERT INTO event_applications (event_id, user_id)
        VALUES ($1, $2)
@@ -100,7 +91,6 @@ const handleApplyToEvent = async (req, res) => {
   }
 };
 
-// 5. Отменить заявку
 const handleCancelApplication = async (req, res) => {
   const userId = req.user.id;
   const eventId = req.params.eventId;
@@ -123,7 +113,6 @@ const handleCancelApplication = async (req, res) => {
   }
 };
 
-// 6. Получить всех пользователей, подавших заявки
 const handleGetEventApplicants = async (req, res) => {
   const eventId = req.params.eventId;
 

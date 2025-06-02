@@ -9,7 +9,7 @@ const {
 const verifyToken = require('../middleware/authMiddleware');
 const validateRequest = require('../middleware/validationMiddleware');
 
-// POST /api/messages — отправить сообщение
+// POST /api/messages
 router.post(
   '/messages',
   verifyToken,

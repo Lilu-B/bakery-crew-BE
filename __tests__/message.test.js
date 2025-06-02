@@ -14,7 +14,6 @@ beforeAll(async () => {
     const passwordManager1 = await bcrypt.hash('manager123', 10);
     const passwordManager2 = await bcrypt.hash('manager456', 10);
 
-    // Создание пользователей
     const uRes = await db.query(`
         INSERT INTO users (name, email, password, role, shift, is_approved)
         VALUES ('Demo User', 'demo@example.com', $1, 'user', '1st', true)
@@ -36,22 +35,16 @@ beforeAll(async () => {
         `, [passwordManager2]);
     manager2Id = m2Res.rows[0].id;
 
-    // Привязка менеджера
     await db.query(`
         UPDATE users SET manager_id = $1 WHERE id = $2
     `, [managerId, userId]);
 
-    // Получение токенов
     const login = async (email, password) =>
         (await request(app).post('/api/login').send({ email, password })).body.token;
 
     userToken = await login('demo@example.com', 'demo123');
     managerToken = await login('manager1@example.com', 'manager123');
 
-// console.log('🔐 !!!___Logged in user ID:', jwt.decode(userToken).id);
-// console.log('🔐 !!!___Logged in manager ID:', jwt.decode(managerToken).id);
-
-    // Отправляем тестовые сообщения
   await request(app)
     .post('/api/messages')
     .set('Authorization', `Bearer ${userToken}`)
@@ -66,7 +59,7 @@ afterAll(() => db.end());
 
 describe('/api/messages', () => {
     describe('POST /api/messages', () => {
-        test('✅ User can message their assigned manager', async () => {
+        test('User can message their assigned manager', async () => {
             const res = await request(app)
             .post('/api/messages')
             .set('Authorization', `Bearer ${userToken}`)
@@ -80,7 +73,7 @@ describe('/api/messages', () => {
             expect(res.body.message.receiver_id).toBe(managerId);
         });
 
-        test('✅ Manager can message their user in same shift', async () => {
+        test('Manager can message their user in same shift', async () => {
             const res = await request(app)
             .post('/api/messages')
             .set('Authorization', `Bearer ${managerToken}`)
@@ -94,7 +87,7 @@ describe('/api/messages', () => {
             expect(res.body.message.receiver_id).toBe(userId);
         });
 
-        test('❌ User cannot message another manager', async () => {
+        test('User cannot message another manager', async () => {
             const res = await request(app)
             .post('/api/messages')
             .set('Authorization', `Bearer ${userToken}`)
@@ -104,7 +97,7 @@ describe('/api/messages', () => {
             expect(res.body.msg).toBe('Users can only message their assigned manager.');
         });
 
-        test('❌ 404 if recipient does not exist', async () => {
+        test('404 if recipient does not exist', async () => {
             const res = await request(app)
                 .post('/api/messages')
                 .set('Authorization', `Bearer ${userToken}`)
@@ -114,7 +107,7 @@ describe('/api/messages', () => {
             expect(res.body.msg).toMatch('Recipient not found.');
             });
 
-            test('❌ 400 if content or recipientId is missing', async () => {
+            test('400 if content or recipientId is missing', async () => {
             const res = await request(app)
                 .post('/api/messages')
                 .set('Authorization', `Bearer ${userToken}`)
@@ -127,7 +120,7 @@ describe('/api/messages', () => {
     });
 
     describe('GET /api/messages/inbox and /sent', () => {
-        test('✅ User can see received messages', async () => {
+        test('User can see received messages', async () => {
             const res = await request(app)
             .get('/api/messages/inbox')
             .set('Authorization', `Bearer ${userToken}`);
@@ -137,7 +130,7 @@ describe('/api/messages', () => {
             expect(res.body.inbox.some(msg => msg.sender_id === managerId)).toBe(true);
         });
 
-        test('✅ Manager can see received messages', async () => {
+        test('Manager can see received messages', async () => {
             const res = await request(app)
             .get('/api/messages/inbox')
             .set('Authorization', `Bearer ${managerToken}`);
@@ -147,7 +140,7 @@ describe('/api/messages', () => {
             expect(res.body.inbox.some(msg => msg.sender_id === userId)).toBe(true);
         });
 
-        test('✅ User can see sent messages', async () => {
+        test('User can see sent messages', async () => {
             const res = await request(app)
             .get('/api/messages/sent')
             .set('Authorization', `Bearer ${userToken}`);
@@ -157,7 +150,7 @@ describe('/api/messages', () => {
             expect(res.body.sent.some(msg => msg.receiver_id === managerId)).toBe(true);
         });
 
-            test('✅ Manager can see sent messages', async () => {
+            test('Manager can see sent messages', async () => {
             const res = await request(app)
             .get('/api/messages/sent')
             .set('Authorization', `Bearer ${managerToken}`);

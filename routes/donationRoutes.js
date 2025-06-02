@@ -15,7 +15,7 @@ const {
 const verifyToken = require('../middleware/authMiddleware');
 const validateRequest = require('../middleware/validationMiddleware');
 
-// 🔹 POST /api/donations - создать новый сбор
+// POST /api/donations 
 router.post(
   '/',
   verifyToken,
@@ -26,17 +26,14 @@ router.post(
   handleCreateDonation
 );
 
-// 🔹 GET /api/donations/active - получить активные сборы
+// GET /api/donations/active 
 router.get('/active', verifyToken, handleGetActiveDonations);
 
-// 🔹 GET /api/donations - получить все сборы (включая завершённые)
+// GET /api/donations 
 router.get('/', verifyToken, handleGetAllDonations);
 router.get('/:donationId', verifyToken, handleGetDonationById);
 
-// // 🔹 POST /api/donations/:donationId/apply - подать заявку
-// router.post('/:donationId/apply', verifyToken, handleApplyToDonation);
-
-// 🔹 POST /api/donations/:donationId/confirm-payment - подтвердить оплату
+// POST /api/donations/:donationId/confirm-payment 
 router.post(
   '/:donationId/confirm-payment',
   verifyToken,
@@ -48,10 +45,10 @@ router.post(
   handleDonationPayment
 );
 
-// 🔹 GET /api/donations/:donationId/applicants - получить участников
+// GET /api/donations/:donationId/applicants 
 router.get('/:donationId/applicants', verifyToken, handleGetDonationApplicants);
 
-// 🔹 DELETE /api/donations/:donationId - удалить сбор
+// DELETE /api/donations/:donationId
 router.delete('/:donationId', verifyToken, handleDeleteDonation);
 
 module.exports = router;

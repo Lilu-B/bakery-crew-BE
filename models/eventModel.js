@@ -1,6 +1,5 @@
 const db = require('../db/connection');
 
-// Создать новое событие
 const createEvent = async ({ title, description, date, shift, created_by }) => {
   const result = await db.query(
     `INSERT INTO events (title, description, date, shift, created_by)
@@ -11,7 +10,6 @@ const createEvent = async ({ title, description, date, shift, created_by }) => {
   return result.rows[0];
 };
 
-// Получить все события (только активные)
 const getAllEvents = async () => {
   const result = await db.query(
     `SELECT e.*, u.name AS creator_name
@@ -23,9 +21,7 @@ const getAllEvents = async () => {
   return result.rows;
 };
 
-// Удалить событие (создатель или админ)
 const deleteEvent = async (eventId, requester) => {
-  // Получаем событие
   const result = await db.query(`SELECT * FROM events WHERE id = $1`, [eventId]);
   const event = result.rows[0];
   if (!event) return null;
@@ -38,7 +34,6 @@ const deleteEvent = async (eventId, requester) => {
   return true;
 };
 
-// Подать заявку на событие
 const applyToEvent = async (eventId, userId) => {
   const result = await db.query(
     `INSERT INTO event_applications (event_id, user_id)
@@ -49,7 +44,6 @@ const applyToEvent = async (eventId, userId) => {
   return result.rows[0];
 };
 
-// Отменить заявку
 const cancelApplication = async (eventId, userId) => {
   const result = await db.query(
     `DELETE FROM event_applications
@@ -60,7 +54,6 @@ const cancelApplication = async (eventId, userId) => {
   return result.rows[0];
 };
 
-// Получить список пользователей, подавших заявки
 const getEventApplicants = async (eventId) => {
   const result = await db.query(
     `SELECT u.id, u.name, u.email
