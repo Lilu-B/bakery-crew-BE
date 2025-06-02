@@ -1,5 +1,4 @@
 node_modules
-.env.development
-.env.test
+
 README.md
 README2.md
