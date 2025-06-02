@@ -1,6 +1,6 @@
 const express = require('express');
 const { body } = require('express-validator');
-const { registerUser, loginUser, handleDeleteUser } = require('../controllers/authController');
+const { handleRegisterUser, handleLoginUser, handleDeleteUser } = require('../controllers/authController');
 const verifyToken = require('../middleware/authMiddleware');
 const validateRequest = require('../middleware/validationMiddleware');
 // const { checkUserRole } = require('../middleware/authMiddleware'); // Импортируем middleware для проверки роли
@@ -18,7 +18,7 @@ router.post('/register',
     body('shift').optional().isString()
   ],
   validateRequest,
-  registerUser
+  handleRegisterUser
 );
 
 // POST /api/login
@@ -29,7 +29,7 @@ router.post('/login',
     body('password').notEmpty().withMessage('Password is required')
   ],
   validateRequest,
-  loginUser
+  handleLoginUser
 );
 
 

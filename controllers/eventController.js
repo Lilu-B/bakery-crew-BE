@@ -2,7 +2,7 @@ const db = require('../db/connection');
 const { validationResult } = require('express-validator');
 
 // 1. Создать событие
-const createEvent = async (req, res) => {
+const handleCreateEvent = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
@@ -23,7 +23,7 @@ const createEvent = async (req, res) => {
 };
 
 // 2. Получить все активные события
-const getAllEvents = async (req, res) => {
+const handleGetAllEvents = async (req, res) => {
   try {
     const result = await db.query(
       `SELECT e.*, u.name AS creator_name
@@ -39,7 +39,7 @@ const getAllEvents = async (req, res) => {
 };
 
 // 3. Удалить событие (только автор или админ)
-const deleteEvent = async (req, res) => {
+const handleDeleteEvent = async (req, res) => {
   const eventId = req.params.eventId;
   const user = req.user;
 
@@ -60,7 +60,7 @@ const deleteEvent = async (req, res) => {
 };
 
 // 4. Подать заявку на событие
-const applyToEvent = async (req, res) => {
+const handleApplyToEvent = async (req, res) => {
   const userId = req.user.id;
   const eventId = req.params.eventId;
 
@@ -101,7 +101,7 @@ const applyToEvent = async (req, res) => {
 };
 
 // 5. Отменить заявку
-const cancelApplication = async (req, res) => {
+const handleCancelApplication = async (req, res) => {
   const userId = req.user.id;
   const eventId = req.params.eventId;
 
@@ -124,7 +124,7 @@ const cancelApplication = async (req, res) => {
 };
 
 // 6. Получить всех пользователей, подавших заявки
-const getEventApplicants = async (req, res) => {
+const handleGetEventApplicants = async (req, res) => {
   const eventId = req.params.eventId;
 
   try {
@@ -143,10 +143,10 @@ const getEventApplicants = async (req, res) => {
 };
 
 module.exports = {
-  createEvent,
-  getAllEvents,
-  deleteEvent,
-  applyToEvent,
-  cancelApplication,
-  getEventApplicants
+  handleCreateEvent,
+  handleGetAllEvents,
+  handleDeleteEvent,
+  handleApplyToEvent,
+  handleCancelApplication,
+  handleGetEventApplicants
 };

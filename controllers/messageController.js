@@ -3,7 +3,7 @@ const { createMessage, getInboxMessages, getSentMessages } = require('../models/
 const db = require('../db/connection');
 
 // ✅ Контроллер отправки сообщения
-const sendMessage = async (req, res) => {
+const handleSendMessage = async (req, res) => {
   // 1. Валидация данных
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -62,7 +62,7 @@ const sendMessage = async (req, res) => {
 };
 
 // 📥 Входящие
-const getInbox = async (req, res) => {
+const handleGetInbox = async (req, res) => {
   try {
     const userId = req.user.id;
     const messages = await getInboxMessages(userId);
@@ -74,7 +74,7 @@ const getInbox = async (req, res) => {
 };
 
 // 📤 Отправленные
-const getSent = async (req, res) => {
+const handleGetSent = async (req, res) => {
   try {
     const userId = req.user.id;
     const messages = await getSentMessages(userId);
@@ -86,7 +86,7 @@ const getSent = async (req, res) => {
 };
 
 module.exports = {
-  sendMessage,
-  getInbox,
-  getSent
+  handleSendMessage,
+  handleGetInbox,
+  handleGetSent
 };

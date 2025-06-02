@@ -6,7 +6,7 @@ const { createUser, findUserByEmail, deleteUser } = require('../models/userModel
 const db = require('../db/connection');
 
 // POST /register
-const registerUser = async (req, res) => {
+const handleRegisterUser = async (req, res) => {
     // 1. Валидация обязательных полей
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -81,7 +81,7 @@ const registerUser = async (req, res) => {
 
 // POST /api/login
 // Асинхронная функция логина пользователя
-const loginUser = async (req, res) => {
+const handleLoginUser = async (req, res) => {
 
 // console.log('⚠️ loginUser controller is ACTIVE');
 
@@ -179,4 +179,4 @@ const handleDeleteUser = async (req, res) => {
 };
   
 
-module.exports = { registerUser, loginUser, handleDeleteUser };
+module.exports = { handleRegisterUser, handleLoginUser, handleDeleteUser };

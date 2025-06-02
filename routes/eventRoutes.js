@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const {
-  createEvent,
-  getAllEvents,
-  deleteEvent,
-  applyToEvent,
-  cancelApplication,
-  getEventApplicants
+  handleCreateEvent,
+  handleGetAllEvents,
+  handleDeleteEvent,
+  handleApplyToEvent,
+  handleCancelApplication,
+  handleGetEventApplicants
 } = require('../controllers/eventController');
 const { body } = require('express-validator');
 const verifyToken = require('../middleware/authMiddleware');
@@ -35,22 +35,22 @@ router.post(
     body('shift').isIn(['1st', '2nd', 'night']).withMessage('Invalid shift')
   ],
   validateRequest, // валидация
-  createEvent
+  handleCreateEvent
 );
 
 // Получить все события
-router.get('/', getAllEvents);
+router.get('/', handleGetAllEvents);
 
 // Удалить событие (создатель или админ)
-router.delete('/:eventId', deleteEvent);
+router.delete('/:eventId', handleDeleteEvent);
 
 // Подать заявку на событие
-router.post('/:eventId/apply', applyToEvent);
+router.post('/:eventId/apply', handleApplyToEvent);
 
 // Отменить заявку
-router.delete('/:eventId/cancel', cancelApplication);
+router.delete('/:eventId/cancel', handleCancelApplication);
 
 // Получить всех заявившихся на событие
-router.get('/:eventId/applicants', getEventApplicants);
+router.get('/:eventId/applicants', handleGetEventApplicants);
 
 module.exports = router;
