@@ -63,14 +63,23 @@ psql bakery_crew_test < db/setup.sql
 "scripts": {
   "start": "node server.js",
   "dev": "NODE_ENV=development nodemon server.js",
-  "test": "NODE_ENV=test jest --runInBand",
-  "prepare": "husky"
+  "test": "NODE_ENV=test jest --runInBand --detectOpenHandles",
+  "prepare": "husky",
+  "seed:test": "NODE_ENV=test node scripts/seedTestUsers.js",
+  "dev:test": "NODE_ENV=test nodemon server.js"
 }
 ```
 
-- `npm run dev` — Start the development server
-- `npm run test` — Run Jest tests in the test environment
-- `npm start` — Start the production server
+### Script Descriptions
+
+| Command            | Description                                                                 |
+|--------------------|-----------------------------------------------------------------------------|
+| `npm run start`     | Launch the app on production port (default `3001`)                          |
+| `npm run dev`       | Start development server with nodemon (`.env.development`)                  |
+| `npm run test`      | Run all Jest integration tests in the test environment                      |
+| `npm run dev:test`  | Start development server using the `.env.test` config (for Postman testing) |
+| `npm run seed:test` | Seed test database with sample users (used for Postman workflows)           |
+| `npm run prepare`   | Initializes Husky for pre-commit hooks                                      |
 
 ---
 
@@ -98,6 +107,15 @@ psql bakery_crew_test < db/setup.sql
 | PATCH  | /api/admin/users/:id/approve           | Approve a pending user         |
 | PATCH  | /api/admin/users/:id/assign-manager    | Promote user to manager        |
 | PATCH  | /api/admin/users/:id/revoke-manager    | Demote manager to regular user |
+
+### Message Routes (`messageRoutes.js`)
+
+| Method | Route               | Role Access | Description                               |
+|--------|---------------------|-------------|-------------------------------------------|
+| POST   | /api/messages       | All users   | Send message to manager or user           |
+| GET    | /api/messages/inbox | All users   | Get inbox messages                        |
+| GET    | /api/messages/sent  | All users   | Get sent messages                         |
+
 
 ### Event Routes (`eventRoutes.js`)
 
@@ -149,6 +167,13 @@ npx jest __tests__/event.test.js
 
 ---
 
+## Utilities
+
+- `scripts/seedTestUsers.js` — preloads users for Postman testing
+- `utils/testUtils.js` — used for resetting database between tests (events, users, messages, etc.)
+
+---
+
 ## 📦 Dependencies
 
 ### Runtime
@@ -190,6 +215,8 @@ createdb bakery_crew_test
 psql bakery_crew < db/setup.sql
 psql bakery_crew_test < db/setup.sql
 
+# Note: db/seeds.sql is currently empty and intended for future data seeding.
+
 # Enter DB shell
 psql bakery_crew
 
@@ -204,11 +231,12 @@ SELECT * FROM users;
 
 ## Role-Based Access Summary
 
-| Role      | Can Approve Users | Can Delete Users        | Can Promote/Demote | JWT Access | Apply to Events | Manage Events | Manage Donations |
-|-----------|-------------------|-------------------------|--------------------|-------------|------------------|----------------|------------------|
-| Developer | ✅                 | All users               | ✅                  | ✅           | ❌               | ✅              | ✅                |
-| Manager   | ✅                 | Users in their shift    | ❌                  | ✅           | ❌               | ✅              | ✅                |
-| User      | ❌                 | Only self               | ❌                  | ✅           | ✅ (own shift)   | ❌              | ✅                |
+| Role      | Can Approve Users | Can Delete Users        | Can Promote/Demote | JWT Access | Apply to Events | Manage Events | Manage Donations | Messages |
+|-----------|-------------------|-------------------------|--------------------|-------------|------------------|----------------|------------------|----------|
+| Developer | ✅                 | All users               | ✅                  | ✅           | ❌               | ✅              | ✅                | ❌        |
+| Manager   | ✅                 | Users in their shift    | ❌                  | ✅           | ❌               | ✅              | ✅                | ✅        |
+| User      | ❌                 | Only self               | ❌                  | ✅           | ✅ (own shift)   | ❌              | ✅                | ✅ (to manager) |
+
 
 ---
 
