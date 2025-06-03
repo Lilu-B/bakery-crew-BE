@@ -53,6 +53,16 @@ createdb bakery_crew_test
 # Run initial SQL setup
 psql bakery_crew < db/setup.sql
 psql bakery_crew_test < db/setup.sql
+
+# Start ENV-dev
+npm run dev
+# or:
+NODE_ENV=development nodemon server.js
+
+# Start ENV-test
+npm run dev:test
+# or:
+NODE_ENV=test nodemon server.js
 ```
 
 ---

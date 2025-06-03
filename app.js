@@ -6,7 +6,6 @@ const adminRoutes = require('./routes/adminRoutes');
 const messageRoutes = require('./routes/messageRoutes');
 const eventRoutes = require('./routes/eventRoutes');
 const donationRoutes = require('./routes/donationRoutes');
-require('dotenv').config();
 
 const app = express();
 
