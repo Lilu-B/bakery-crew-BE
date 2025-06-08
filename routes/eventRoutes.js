@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const {
   handleCreateEvent,
+  handleGetSingleEvent,
   handleGetAllEvents,
   handleDeleteEvent,
   handleApplyToEvent,
@@ -19,7 +20,7 @@ router.post(
   verifyToken, 
   [
     body('title').notEmpty().withMessage('Title is required'),
-    body('date').isDate().withMessage('Valid date required'),
+    body('date').isISO8601().withMessage('Valid ISO date required'),
     body('shift').isIn(['1st', '2nd', 'night']).withMessage('Invalid shift')
   ],
   validateRequest, 
@@ -27,6 +28,8 @@ router.post(
 );
 
 router.get('/', handleGetAllEvents);
+
+router.get('/:eventId', handleGetSingleEvent);
 
 router.delete('/:eventId', handleDeleteEvent);
 

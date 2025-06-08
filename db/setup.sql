@@ -78,7 +78,7 @@ CREATE TABLE donation_applications (
 INSERT INTO users (email, password, name, role, is_approved)
 VALUES (
   'admin@bakery.local',
-  '$2b$10$Ek6F35Gw7eAhLxVcagkgZeuFbjRtC3jlTsIKgQeQEzDw/d08kKYjG',
+  '$2b$10$KFv0iks5SiuLTYjYIIPAW.9klNGqWHsFcxctn1Apr1KeIsmM619iO',   -- Password: 'admin123'
   'Main Admin',
   'developer',
   true

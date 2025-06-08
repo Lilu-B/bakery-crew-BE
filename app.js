@@ -1,6 +1,7 @@
 const db = require('./db/connection');
 const express = require('express');
 const cors = require('cors');
+const camelToSnakeMiddleware = require('./middleware/camelToSnakeMiddleware');
 const authRoutes = require('./routes/authRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const messageRoutes = require('./routes/messageRoutes');
@@ -11,6 +12,7 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use(camelToSnakeMiddleware);
 app.use('/api', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api', messageRoutes);

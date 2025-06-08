@@ -47,6 +47,7 @@ const handleRegisterUser = async (req, res) => {
           id: newUser.id,
           name: newUser.name,
           email: newUser.email,
+          phone: newUser.phone,
           shift: newUser.shift,
           role: newUser.role,
           isApproved: newUser.is_approved,
@@ -55,7 +56,7 @@ const handleRegisterUser = async (req, res) => {
       });
   
     } catch (error) {
-    console.error('❌ Registration error:', error);
+    console.error('Registration error:', error);
     res.status(500).json({
       msg: 'An error occurred while trying to register the user. Please try again later.',
       error: error.message  
@@ -114,7 +115,41 @@ const handleLoginUser = async (req, res) => {
     }
   };
 
+const handleUpdateUserProfile = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { name, phone, shift } = req.body;
 
+    const result = await db.query(
+      `UPDATE users
+       SET name = $1, phone = $2, shift = $3
+       WHERE id = $4
+       RETURNING id, name, email, role, shift, phone, is_approved, manager_id`,
+      [name, phone, shift, userId]
+    );
+
+    const user = result.rows[0];
+
+    if (!user) {
+      return res.status(404).json({ msg: 'User not found.' });
+    }
+
+    res.status(200).json({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      shift: user.shift,
+      role: user.role,
+      phone: user.phone,
+      isApproved: user.is_approved,
+      managerId: user.manager_id || null
+    });
+
+  } catch (error) {
+    console.error('Update profile error:', error);
+    res.status(500).json({ msg: 'Failed to update profile' });
+  }
+};
 
 const handleDeleteUser = async (req, res) => {
   try {
@@ -142,6 +177,43 @@ const handleDeleteUser = async (req, res) => {
     res.status(500).json({ msg: 'Internal server error' });
   }
 };
-  
 
-module.exports = { handleRegisterUser, handleLoginUser, handleDeleteUser };
+const getProtectedUser = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const result = await db.query(
+      `SELECT id, name, email, phone, role, shift, is_approved, manager_id
+       FROM users WHERE id = $1`,
+      [userId]
+    );
+
+    const user = result.rows[0];
+
+    if (!user) {
+      return res.status(404).json({ msg: 'User not found.' });
+    }
+
+    res.status(200).json({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone, // ✅ теперь вернётся!
+      role: user.role,
+      shift: user.shift,
+      isApproved: user.is_approved,
+      managerId: user.manager_id
+    });
+  } catch (error) {
+    console.error('Protected user fetch error:', error);
+    res.status(500).json({ msg: 'Server error retrieving user profile.' });
+  }
+};
+
+module.exports = { 
+  handleRegisterUser, 
+  handleLoginUser, 
+  handleUpdateUserProfile,
+  handleDeleteUser, 
+  getProtectedUser 
+};

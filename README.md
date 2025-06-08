@@ -296,3 +296,26 @@ bakery-crew-BE/
 ---
 
 This backend is designed for scalability and clean role-based logic separation.
+
+--------------
+NEW - что добавили в процессе разработки фронтенда!
+--------------
+
+В authController.js:
+  getProtectedUser,
+  updateUserProfile 
+
+В eventController.js:
+  handleGetSingleEvent
+
+В authRoutes.js 
+  router.get('/protected', verifyToken, getProtectedUser);
+  router.patch('/users/me', verifyToken, updateUserProfile);
+
+В eventRoutes.js 
+  router.get('/:eventId', handleGetSingleEvent);
+
+	1.	Как создать middleware convertCamelToSnake.js
+	2.	Как подключить его в app.js (или server.js)
+	3.	Как использовать его только на нужных роутерах (например, на POST, PATCH, PUT)
+

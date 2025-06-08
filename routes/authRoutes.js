@@ -1,6 +1,12 @@
 const express = require('express');
 const { body } = require('express-validator');
-const { handleRegisterUser, handleLoginUser, handleDeleteUser } = require('../controllers/authController');
+const { 
+  handleRegisterUser, 
+  handleLoginUser, 
+  handleUpdateUserProfile, 
+  handleDeleteUser, 
+  getProtectedUser 
+} = require('../controllers/authController');
 const verifyToken = require('../middleware/authMiddleware');
 const validateRequest = require('../middleware/validationMiddleware');
 const router = express.Router();
@@ -14,7 +20,7 @@ router.post('/register',
     body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
     body('role').optional().isIn(['user', 'manager', 'developer']),
     body('phone').optional().isMobilePhone().withMessage('Invalid phone number'),
-    body('shift').optional().isString()
+    body('shift').isIn(['1st', '2nd']).withMessage('Valid shift is required')
   ],
   validateRequest,
   handleRegisterUser
@@ -39,11 +45,11 @@ router.post('/logout', (req, res) => {
 // DELETE /api/users/:id
 router.delete('/users/:id', verifyToken, handleDeleteUser);
 
+// PATCH /api/users/me
+router.patch('/users/me', verifyToken, handleUpdateUserProfile);
 
 // GET /api/protected
-router.get('/protected', verifyToken, (req, res) => {
-  res.status(200).json({ msg: `Hello, ${req.user.email}!`, role: req.user.role });
-});
+router.get('/protected', verifyToken, getProtectedUser);
 
 
 module.exports = router;

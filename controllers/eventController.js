@@ -6,7 +6,12 @@ const handleCreateEvent = async (req, res) => {
   if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
   const { title, description, date, shift } = req.body;
-  const userId = req.user.id;
+  const { id: userId, role, shift: userShift } = req.user;
+
+  // 🔒 Менеджеры могут создавать ивенты только для своей смены
+  if (role === 'manager' && shift !== userShift) {
+    return res.status(403).json({ msg: 'Managers can only create events for their own shift' });
+  }
 
   try {
     const result = await db.query(
@@ -21,15 +26,77 @@ const handleCreateEvent = async (req, res) => {
   }
 };
 
-const handleGetAllEvents = async (req, res) => {
+const handleGetSingleEvent = async (req, res) => {
+  const { eventId } = req.params;
+  const userId = req.user.id;
+  const role = req.user.role;
+
   try {
-    const result = await db.query(
-      `SELECT e.*, u.name AS creator_name
-       FROM events e
-       JOIN users u ON e.created_by = u.id
-       WHERE e.status = 'active'
-       ORDER BY e.date ASC;`
-    );
+    let result;
+
+    if (role === 'user') {
+      // 👤 Для пользователей — добавляем applied
+      result = await db.query(
+        `SELECT e.*, u.name AS creator_name,
+                EXISTS (
+                  SELECT 1 FROM event_applications ea
+                  WHERE ea.event_id = e.id AND ea.user_id = $1
+                ) AS applied
+         FROM events e
+         JOIN users u ON e.created_by = u.id
+         WHERE e.id = $2 AND e.status = 'active';`,
+        [userId, eventId]
+      );
+    } else {
+      // 👥 Для менеджеров и разработчиков — без поля applied
+      result = await db.query(
+        `SELECT e.*, u.name AS creator_name
+         FROM events e
+         JOIN users u ON e.created_by = u.id
+         WHERE e.id = $1 AND e.status = 'active';`,
+        [eventId]
+      );
+    }
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ msg: 'Event not found' });
+    }
+
+    res.status(200).json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ msg: 'Error fetching event', error: err.message });
+  }
+};
+
+const handleGetAllEvents = async (req, res) => {
+  const userId = req.user.id;
+  const role = req.user.role;
+
+  try {
+    let result;
+
+    if (role === 'user') {
+      result = await db.query(
+        `SELECT e.*, u.name AS creator_name,
+                EXISTS (
+                  SELECT 1 FROM event_applications ea
+                  WHERE ea.event_id = e.id AND ea.user_id = $1
+                ) AS applied
+         FROM events e
+         JOIN users u ON e.created_by = u.id
+         WHERE e.status = 'active'
+         ORDER BY e.date ASC;`,
+        [userId]
+      );
+    } else {
+      result = await db.query(
+        `SELECT e.*, u.name AS creator_name
+         FROM events e
+         JOIN users u ON e.created_by = u.id
+         WHERE e.status = 'active'
+         ORDER BY e.date ASC;`
+      );
+    }
     res.status(200).json({ events: result.rows });
   } catch (err) {
     res.status(500).json({ msg: 'Error fetching events', error: err.message });
@@ -46,8 +113,18 @@ const handleDeleteEvent = async (req, res) => {
 
     if (!event) return res.status(404).json({ msg: 'Event not found' });
 
-    if (user.role !== 'developer' && user.id !== event.created_by)
+    const isAdmin = user.role === 'developer';
+    const isManager = user.role === 'manager';
+    const isCreator = user.id === event.created_by;
+    const sameShift = user.shift === event.shift;
+
+    const canDelete =
+      isAdmin ||
+      (isManager && (isCreator || sameShift));
+
+    if (!canDelete) {
       return res.status(403).json({ msg: 'Access denied' });
+    }
 
     await db.query('DELETE FROM events WHERE id = $1', [eventId]);
     res.status(200).json({ msg: 'Event deleted', eventId });
@@ -133,6 +210,7 @@ const handleGetEventApplicants = async (req, res) => {
 
 module.exports = {
   handleCreateEvent,
+  handleGetSingleEvent,
   handleGetAllEvents,
   handleDeleteEvent,
   handleApplyToEvent,
