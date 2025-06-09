@@ -13,8 +13,7 @@ const app = express();
 
 app.use(cookieParser());
 app.use(cors({
-  origin: 'https://bakery-crew-fe.vercel.app',
-  credentials: true
+  origin: 'https://bakery-crew-fe.vercel.app'
 }));
 app.use(express.json());
 app.use(camelToSnakeMiddleware);
