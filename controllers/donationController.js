@@ -65,7 +65,7 @@ const handleGetAllDonations = async (req, res) => {
 
 const handleGetDonationById = async (req, res) => {
   try {
-    const donation = await getDonationById(req.params.donationId);
+    const donation = await getDonationById(req.params.donationId, req.user.id);
     if (!donation) return res.status(404).json({ msg: 'Donation not found' });
     res.status(200).json({ donation });
   } catch (err) {

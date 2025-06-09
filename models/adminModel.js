@@ -31,9 +31,20 @@ const revokeManagerRole = async (userId) => {
   return result.rows[0] || null;
 };
 
+const getPendingUsers = async () => {
+  const result = await db.query(`
+    SELECT id, name, email, role, shift, phone, is_approved, manager_id
+    FROM users
+    WHERE is_approved = false
+    ORDER BY registration_date DESC
+  `);
+  return result.rows;
+};
+
 
 module.exports = {
   approveUser,
   assignManagerRole,
-  revokeManagerRole
+  revokeManagerRole,
+  getPendingUsers
 };

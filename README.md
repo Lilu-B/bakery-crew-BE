@@ -26,6 +26,16 @@ npm install
 touch .env.development .env.test
 ```
 
+### First-Time Test Setup
+
+If this is your first time setting up the test environment:
+
+```bash
+createdb bakery_crew_test
+psql bakery_crew_test < db/setup.sql
+npm run seed:test
+npm test
+
 ### Environment Configuration
 
 #### `.env.development`
@@ -292,30 +302,4 @@ bakery-crew-BE/
 ├── app.js                 # App definition
 └── README.md              # This file
 ```
-
----
-
-This backend is designed for scalability and clean role-based logic separation.
-
---------------
-NEW - что добавили в процессе разработки фронтенда!
---------------
-
-В authController.js:
-  getProtectedUser,
-  updateUserProfile 
-
-В eventController.js:
-  handleGetSingleEvent
-
-В authRoutes.js 
-  router.get('/protected', verifyToken, getProtectedUser);
-  router.patch('/users/me', verifyToken, updateUserProfile);
-
-В eventRoutes.js 
-  router.get('/:eventId', handleGetSingleEvent);
-
-	1.	Как создать middleware convertCamelToSnake.js
-	2.	Как подключить его в app.js (или server.js)
-	3.	Как использовать его только на нужных роутерах (например, на POST, PATCH, PUT)
 

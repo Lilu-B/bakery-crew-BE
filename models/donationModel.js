@@ -59,17 +59,35 @@ const getAllDonations = async (currentUserId, filters = {}) => {
   return result.rows;
 };
 
-const getDonationById = async (donationId) => {
+// const getDonationById = async (donationId) => {
+//   const result = await db.query(
+//     `SELECT d.*, u.name AS creator_name,
+//       COALESCE(SUM(da.amount), 0) AS total_collected,
+//       COUNT(DISTINCT da.user_id) AS donor_count
+//      FROM donations d
+//      LEFT JOIN donation_applications da ON d.id = da.donation_id
+//      JOIN users u ON d.created_by = u.id
+//      WHERE d.id = $1
+//      GROUP BY d.id, u.name;`,
+//     [donationId]
+//   );
+//   return result.rows[0];
+// };
+const getDonationById = async (donationId, userId) => {
   const result = await db.query(
     `SELECT d.*, u.name AS creator_name,
       COALESCE(SUM(da.amount), 0) AS total_collected,
-      COUNT(DISTINCT da.user_id) AS donor_count
+      COUNT(DISTINCT da.user_id) AS donor_count,
+      EXISTS (
+        SELECT 1 FROM donation_applications da2
+        WHERE da2.donation_id = d.id AND da2.user_id = $2
+      ) AS has_donated
      FROM donations d
      LEFT JOIN donation_applications da ON d.id = da.donation_id
      JOIN users u ON d.created_by = u.id
      WHERE d.id = $1
      GROUP BY d.id, u.name;`,
-    [donationId]
+    [donationId, userId]
   );
   return result.rows[0];
 };

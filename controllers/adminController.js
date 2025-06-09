@@ -1,4 +1,4 @@
-const { approveUser, assignManagerRole, revokeManagerRole } = require('../models/adminModel');
+const { approveUser, assignManagerRole, revokeManagerRole, getPendingUsers } = require('../models/adminModel');
 
 const handleApproveUser = async (req, res) => {
   try {
@@ -72,9 +72,34 @@ const handleRevokeManager = async (req, res) => {
   }
 };
 
+const handleGetPendingUsers = async (req, res) => {
+  try {
+    const pendingUsers = await getPendingUsers();
+
+    // Если текущий пользователь — менеджер, показываем только неподтверждённых своей смены
+    let filteredUsers;
+
+    if (req.user.role === 'manager') {
+      filteredUsers = pendingUsers.filter(user => user.shift === req.user.shift);
+    } else if (req.user.role === 'developer') {
+      // Админы видят всех неподтверждённых
+      filteredUsers = pendingUsers;
+    } else {
+      return res.status(403).json({ msg: 'Access denied' });
+    }
+
+    res.status(200).json({ users: filteredUsers });
+
+  } catch (err) {
+    console.error('Get all users error:', err);
+    res.status(500).json({ msg: 'Internal server error' });
+  }
+};
+
 
 module.exports = {
   handleApproveUser,
   handleAssignManager,
-  handleRevokeManager
+  handleRevokeManager,
+  handleGetPendingUsers
 };

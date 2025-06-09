@@ -194,8 +194,9 @@ describe('GET /api/protected', () => {
       .set('Authorization', `Bearer ${validToken}`);
 
     expect(res.statusCode).toBe(200);
-    expect(res.body).toHaveProperty('msg');
     expect(res.body).toHaveProperty('role');
+    expect(res.body).toHaveProperty('email');
+    expect(res.body.isApproved).toBe(true);
   });
 
   test('401: returns error if no Authorization header is present', async () => {

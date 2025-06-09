@@ -5,7 +5,7 @@ const {
   handleLoginUser, 
   handleUpdateUserProfile, 
   handleDeleteUser, 
-  getProtectedUser 
+  getProtectedUser
 } = require('../controllers/authController');
 const verifyToken = require('../middleware/authMiddleware');
 const validateRequest = require('../middleware/validationMiddleware');
@@ -19,7 +19,7 @@ router.post('/register',
     body('email').isEmail().withMessage('Valid email is required'),
     body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
     body('role').optional().isIn(['user', 'manager', 'developer']),
-    body('phone').optional().isMobilePhone().withMessage('Invalid phone number'),
+    body('phone').optional({ nullable: true, checkFalsy: true }).isString(),
     body('shift').isIn(['1st', '2nd']).withMessage('Valid shift is required')
   ],
   validateRequest,

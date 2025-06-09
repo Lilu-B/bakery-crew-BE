@@ -91,7 +91,7 @@ describe('POST /api/events - Creating an event', () => {
       });
 
     expect(res.statusCode).toBe(400);
-    expect(res.body.errors[0].msg).toMatch(/valid date/i);
+    expect(res.body.errors[0].msg).toBe('Valid ISO date required');
   });
 
   test('Creating event fails with invalid shift', async () => {
