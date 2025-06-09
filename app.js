@@ -10,7 +10,10 @@ const donationRoutes = require('./routes/donationRoutes');
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: 'https://bakery-crew-fe.vercel.app',
+  credentials: true
+}));
 app.use(express.json());
 app.use(camelToSnakeMiddleware);
 app.use('/api', authRoutes);
