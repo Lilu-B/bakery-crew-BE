@@ -1,4 +1,5 @@
 const db = require('./db/connection');
+const cookieParser = require('cookie-parser');
 const express = require('express');
 const cors = require('cors');
 const camelToSnakeMiddleware = require('./middleware/camelToSnakeMiddleware');
@@ -10,6 +11,7 @@ const donationRoutes = require('./routes/donationRoutes');
 
 const app = express();
 
+app.use(cookieParser());
 app.use(cors({
   origin: 'https://bakery-crew-fe.vercel.app',
   credentials: true
