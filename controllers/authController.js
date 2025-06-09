@@ -111,7 +111,7 @@ const handleLoginUser = async (req, res) => {
             sameSite: 'none', 
             maxAge: 30 * 24 * 60 * 60 * 1000, 
           })
-          .json({ msg: 'Login successful.' });
+          .json({ msg: 'Login successful', token }); 
   
     } catch (error) {
       console.error('Login error:', error);
